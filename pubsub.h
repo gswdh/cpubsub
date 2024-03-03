@@ -13,9 +13,9 @@ typedef enum
     PS_ALLOC_ERROR
 } ps_result_t;
 
-typedef struct
+typedef struct ps_node_t
 {
-    ps_node_t *next;
+    struct ps_node_t *next;
     topic_t    topic;
     pipe_t *   pipe;
 } ps_node_t;

@@ -1,6 +1,7 @@
 #include "pubsub.h"
 
 #include <stddef.h>
+#include <stdlib.h>
 
 static ps_node_t ps_node = {0};
 
