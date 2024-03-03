@@ -8,7 +8,7 @@ typedef enum {PIPE_WAIT_BLOCK, PIPE_WAIT_POLL} pipe_wait_t;
 
 typedef struct
 {
-
+    void * queue;
 } pipe_t;
 
 void pipe_init(pipe_t * pipe, uint32_t len);

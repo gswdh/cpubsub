@@ -2,22 +2,22 @@
 
 #include <stddef.h>
 
-void pipe_init(pipe_t * pipe, uint32_t len)
+void __attribute__((weak)) pipe_init(pipe_t * pipe, uint32_t len)
 {
     pipe = NULL;
 }
 
-void pipe_delete(pipe_t * pipe)
+void __attribute__((weak)) pipe_delete(pipe_t * pipe)
 {
 
 }
 
-void pipe_push(pipe_t * pipe, void * p_item)
+void __attribute__((weak)) pipe_push(pipe_t * pipe, void * p_item)
 {
 
 }
 
-bool pipe_pop(pipe_t * pipe, void * p_item)
+bool __attribute__((weak)) pipe_pop(pipe_t * pipe, void * p_item)
 {
     return false;
 }
