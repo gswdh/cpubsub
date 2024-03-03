@@ -1,6 +1,6 @@
 # cpubsub
 
-This software is an atept to make a platform agnostic publish and subcribe the messaging manager will low respurce embedded systems in mind. 
+This software is an attempt to make a platform agnostic publish and subcribe the messaging manager will low respurce embedded systems in mind. The code is written in C and only relies on standard libraries (and your choice of queue library) targeted for compilation with a Gnu based C compiler. Your compiler should be compatible witb leakly defined functions.
 
 The intention is for safe inter-thread communication. Auto generated topic IDs and message types are used to automate the communication interfaces. Only pointers are passed to the internal queues so data stored in memetoy muct be rpeserved long enough for the subscriber to make use of it. However, all memory allocated for driver use is kept within the subscriber thread and is only accessed via pointers.
 
