@@ -1,0 +1,31 @@
+# Reasonable RFX Clang Format config v0
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+---
+Language:      Cpp
+
+ColumnLimit: 100
+IndentWidth: 4
+UseTab: Never
+
+# ALL CHANGES BELOW ARE RFX-AGREED.
+# We prefer to always have a newline break before "{" that follows functions and control statements.
+BreakBeforeBraces: Allman
+
+# If false, a function call’s arguments will either be all on the same line or will have one line each.
+BinPackArguments: false
+# If false, a function declaration’s or function definition’s parameters will either all be on the same line or will have one line each.
+BinPackParameters: false
+
+# Adjusting for clang-format version 11 compatibility
+# Align parameters on the open bracket.
+AlignAfterOpenBracket: Align  # Alternative to BlockIndent, aligns parameters after an open bracket.
+
+AlignEscapedNewlines: Left
+
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true
+AlignConsecutiveMacros: true
+
+AllowShortBlocksOnASingleLine: Never
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
