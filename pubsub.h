@@ -16,8 +16,8 @@ typedef enum
 typedef struct ps_node_t
 {
     struct ps_node_t *next;
-    topic_t    topic;
-    pipe_t *   pipe;
+    topic_t           topic;
+    pipe_t *          pipe;
 } ps_node_t;
 
 ps_result_t ps_subscribe(topic_t topic, pipe_t *pipe);

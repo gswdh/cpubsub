@@ -60,8 +60,9 @@ ps_result_t ps_receive(pipe_t *pipe, void *msg, pipe_wait_t wait)
         // Wait for a message
         while (!pipe_pop(pipe, msg))
         {
-            return PS_OK;
         }
+
+        return PS_OK;
     }
 
     if (wait == PIPE_WAIT_POLL)
