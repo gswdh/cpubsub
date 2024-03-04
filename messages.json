@@ -1,0 +1,38 @@
+{
+    "base_message": {
+        "name": "Base",
+        "fields": [
+            {
+                "type": "uint32_t",
+                "name": "id"
+            },
+            {
+                "type": "void *",
+                "name": "msg"
+            }
+        ]
+    },
+    "user_messages": [
+        {
+            "name": "ChargingStatus",
+            "fields": [
+                {
+                    "type": "float",
+                    "name": "input_v"
+                },
+                {
+                    "type": "float",
+                    "name": "input_a"
+                },
+                {
+                    "type": "float",
+                    "name": "battery_v"
+                },
+                {
+                    "type": "float",
+                    "name": "battery_a"
+                }
+            ]
+        }
+    ]
+}
