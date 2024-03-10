@@ -1,17 +1,4 @@
 {
-    "base_message": {
-        "name": "Base",
-        "fields": [
-            {
-                "type": "uint32_t",
-                "name": "id"
-            },
-            {
-                "type": "void *",
-                "name": "msg"
-            }
-        ]
-    },
     "user_messages": [
         {
             "name": "ChargingStatus",
@@ -31,6 +18,15 @@
                 {
                     "type": "float",
                     "name": "battery_a"
+                }
+            ]
+        },
+        {
+            "name": "PowerRequest",
+            "fields": [
+                {
+                    "type": "bool",
+                    "name": "pwr_dwn_req"
                 }
             ]
         }

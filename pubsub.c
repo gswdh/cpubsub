@@ -3,10 +3,15 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#include "messages.h"
+
 static ps_node_t ps_node = {0};
 
 ps_result_t ps_subscribe(topic_t topic, pipe_t *pipe)
 {
+    // Init the pipe
+    pipe_init(pipe, cPS_msg_size[topic], 10);
+
     // First node in the list is not used
     ps_node_t *node = &ps_node;
 
@@ -32,8 +37,11 @@ ps_result_t ps_subscribe(topic_t topic, pipe_t *pipe)
     return PS_OK;
 }
 
-ps_result_t ps_publish(topic_t topic, void *msg)
+ps_result_t ps_publish(void *msg)
 {
+    // Get the topic from the message type
+    topic_t topic = ((cPS_Packet_Template_t*)msg)->mid;
+
     // First node in the list is not used
     ps_node_t *node = &ps_node;
 
@@ -75,4 +83,9 @@ ps_result_t ps_receive(pipe_t *pipe, void *msg, pipe_wait_t wait)
     }
 
     return PS_NO_MSG;
+}
+
+topic_t cPS_get_mid(void * data)
+{
+    return ((cPS_Packet_Template_t*)data)->mid;
 }

@@ -20,8 +20,15 @@ typedef struct ps_node_t
     pipe_t *          pipe;
 } ps_node_t;
 
+typedef struct
+{
+	uint32_t mid;
+    void * ptr;
+} cPS_Packet_Template_t;
+
 ps_result_t ps_subscribe(topic_t topic, pipe_t *pipe);
-ps_result_t ps_publish(topic_t topic, void *msg);
+ps_result_t ps_publish(void *msg);
 ps_result_t ps_receive(pipe_t *pipe, void *msg, pipe_wait_t wait);
+topic_t cPS_get_mid(void * data);
 
 #endif

@@ -3,7 +3,7 @@ import click
 import numpy as np
 
 def make_struct(struct):
-    struct_str = "typedef struct\n{\n"
+    struct_str = "typedef struct\n{\n\tuint32_t mid;\n"
     for field in struct["fields"]:
         struct_str += f'\t{field["type"]} {field["name"]};\n'
     struct_str += "}" + f" cPS_{struct['name']}_Packet_t;"
@@ -16,12 +16,16 @@ def run(input):
         output.write("#ifndef _MESSAGES_H_\n#define _MESSAGES_H_\n\n#include <stdint.h>\n\n")
         with open(input, "r") as f:
             structs = json.load(f)
-        output.write(make_struct(structs['base_message']) + "\n\n")
-        for message in structs["user_messages"]:
-            msg_id = "0x" + hex(np.uint32(hash(message['name'])))[2:].upper().zfill(8)
+        msg_names = []
+        for index, message in enumerate(structs["user_messages"]):
+            msg_id = "0x" + hex(index)[2:].upper().zfill(8)
             msg_name = f"cPS_{message['name']}_MID"
+            msg_names.append(msg_name)
             output.write(f"#define {msg_name} ({msg_id})\n\n")
             output.write(make_struct(message) + "\n\n")
+        output.write("static const uint32_t cPS_msg_size[] = {")
+        output.write(", ".join([f"sizeof({name})" for name in msg_names]))
+        output.write("};\n\n")
         output.write("#endif\n")
 
 

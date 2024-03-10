@@ -13,9 +13,10 @@ typedef enum
 typedef struct
 {
     void *queue;
+    uint32_t obj_size;
 } pipe_t;
 
-void pipe_init(pipe_t *pipe, uint32_t len);
+void pipe_init(pipe_t *pipe, uint32_t obj_size, uint32_t queue_len);
 void pipe_delete(pipe_t *pipe);
 void pipe_push(pipe_t *pipe, void *p_item);
 bool pipe_pop(pipe_t *pipe, void *p_item);
