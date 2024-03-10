@@ -22,6 +22,6 @@ typedef struct
 	bool pwr_dwn_req;
 } cPS_PowerRequest_Packet_t;
 
-static const uint32_t cPS_msg_size[] = {sizeof(cPS_ChargingStatus_MID), sizeof(cPS_PowerRequest_MID)};
+static const uint32_t cPS_msg_size[] = {sizeof(cPS_ChargingStatus_Packet_t), sizeof(cPS_PowerRequest_Packet_t)};
 
 #endif
