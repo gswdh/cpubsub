@@ -1,7 +1,7 @@
 {
     "user_messages": [
         {
-            "name": "ChargingStatus",
+            "name": "Charging Status",
             "fields": [
                 {
                     "type": "float",
@@ -22,7 +22,7 @@
             ]
         },
         {
-            "name": "PowerRequest",
+            "name": "Power Request",
             "fields": [
                 {
                     "type": "bool",

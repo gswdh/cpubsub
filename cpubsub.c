@@ -43,7 +43,7 @@ cps_result_t cps_publish(void *msg)
     topic_t topic = ((cps_packet_template_t *)msg)->mid;
 
     // First node in the list is not used
-    cps_node_t *node = &ps_node;
+    cps_node_t *node = &cps_node;
 
     // Get to the end of the list
     while (node->next)
