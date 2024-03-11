@@ -5,6 +5,8 @@
 
 #include "messages.h"
 
+#include "console.h"
+
 static cps_node_t cps_node = {0};
 
 cps_result_t cps_subscribe(topic_t topic, pipe_t *pipe)

@@ -29,6 +29,15 @@
                     "name": "pwr_dwn_req"
                 }
             ]
+        },
+        {
+            "name": "UART Terminal",
+            "fields": [
+                {
+                    "type": "char",
+                    "name": "message[256]"
+                }
+            ]
         }
     ]
 }
