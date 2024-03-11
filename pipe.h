@@ -12,7 +12,7 @@ typedef enum
 
 typedef struct
 {
-    void *queue;
+    void *   queue;
     uint32_t obj_size;
 } pipe_t;
 
