@@ -7,21 +7,22 @@
 
 typedef struct
 {
-	uint32_t mid;
-	float input_v;
-	float input_a;
-	float battery_v;
-	float battery_a;
+    uint32_t mid;
+    float    input_v;
+    float    input_a;
+    float    battery_v;
+    float    battery_a;
 } cps_charging_status_packet_t;
 
 #define CPS_POWER_REQUEST_MID (0x00000001)
 
 typedef struct
 {
-	uint32_t mid;
-	bool pwr_dwn_req;
+    uint32_t mid;
+    bool     pwr_dwn_req;
 } cps_power_request_packet_t;
 
-static const uint32_t cps_msg_size[] = {sizeof(cps_charging_status_packet_t), sizeof(cps_power_request_packet_t)};
+static const uint32_t cps_msg_size[] = {sizeof(cps_charging_status_packet_t),
+                                        sizeof(cps_power_request_packet_t)};
 
 #endif
