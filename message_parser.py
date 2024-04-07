@@ -1,5 +1,9 @@
 import click
 import importlib
+import sys
+
+# Add the parent directory to sys.path
+sys.path.append("../")
 
 @click.command()
 @click.option("--input", help="Path to input python message classes", required=True)
