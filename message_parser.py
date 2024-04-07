@@ -3,14 +3,11 @@ import importlib
 
 @click.command()
 @click.option("--input", help="Path to input python message classes", required=True)
-@click.option("--output", help="Path to C header output file", required=False)
+@click.option("--output", help="Path to C header output file", required=True)
 def run(input, output):
     # Import the messages defined in python classes
     module = importlib.import_module(input)
     globals().update({k: getattr(module, k) for k in dir(module) if not k.startswith('_')})
-
-    if not output:
-        output = output.replace("py", "h")
 
     # Make the output file
     f = open(output, "w+")
