@@ -5,8 +5,6 @@
 #include <FreeRTOS.h>
 #include <queue.h>
 
-#include "console.h"
-
 void pipe_init(pipe_t *pipe, uint32_t obj_size, uint32_t queue_len)
 {
     // Do we already have a queue for this pipe?
