@@ -26,10 +26,11 @@ def run(input, output):
     # Go through the messages and export
     for key in MSGS.keys():
         msg = MSGS[key]
-        struct_name = f"{msg.__name__}_MID"
-        f.write(msg.generate_c_struct_code() + "\n")
-        f.write(f"#define {struct_name} ({hex(key)})\n")
-        f.write(f"#define {struct_name}_LEN (sizeof({struct_name}))\n")
+        struct_name = f"{msg.__name__}"
+        struct, struct_type = msg.generate_c_struct_code()
+        f.write(struct + "\n")
+        f.write(f"#define {struct_name}_MID ({hex(key)})\n")
+        f.write(f"#define {struct_name}_LEN (sizeof({struct_type}))\n")
         f.write("\n")
 
     f.write("#endif\n")

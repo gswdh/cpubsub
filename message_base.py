@@ -2,6 +2,21 @@ import ctypes
 
 class CStructBase:
     fields = []
+    
+    # Mapping of ctypes to their equivalent C stdint types
+    ctypes_to_c_mapping = {
+        ctypes.c_uint8: "uint8_t",
+        ctypes.c_int8: "int8_t",
+        ctypes.c_uint16: "uint16_t",
+        ctypes.c_int16: "int16_t",
+        ctypes.c_uint32: "uint32_t",
+        ctypes.c_int32: "int32_t",
+        ctypes.c_uint64: "uint64_t",
+        ctypes.c_int64: "int64_t",
+        ctypes.c_float: "float",
+        ctypes.c_double: "double"
+        # Add other mappings as needed
+    }
 
     def create_ctypes_struct(self):
         """
@@ -39,11 +54,11 @@ class CStructBase:
         """
         lines = ["typedef struct __attribute__((packed)) {"]
         for field_name, field_type in cls.fields:
+            c_type_name = cls.ctypes_to_c_mapping.get(field_type, "undefined")
             if hasattr(field_type, '_length_'):
-                base_type = field_type._type_.__name__.replace('c_', '')
+                base_type = cls.ctypes_to_c_mapping.get(field_type._type_, "undefined")
                 lines.append(f"  {base_type} {field_name}[{field_type._length_}];")
             else:
-                base_type = field_type.__name__.replace('c_', '')
-                lines.append(f"  {base_type} {field_name};")
+                lines.append(f"  {c_type_name} {field_name};")
         lines.append(f"}} {cls.__name__}_t;")
-        return "\n".join(lines)
+        return ["\n".join(lines), cls.__name__ + "_t"]
