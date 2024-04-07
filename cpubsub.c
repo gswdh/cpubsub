@@ -7,10 +7,10 @@
 
 static cps_node_t cps_node = {0};
 
-cps_result_t cps_subscribe(topic_t topic, pipe_t *pipe)
+cps_result_t cps_subscribe(topic_t topic, uint32_t topic_size, pipe_t *pipe)
 {
     // Init the pipe
-    pipe_init(pipe, cps_msg_size[topic], 10);
+    pipe_init(pipe, topic_size, 10);
 
     // First node in the list is not used
     cps_node_t *node = &cps_node;

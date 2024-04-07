@@ -26,7 +26,7 @@ typedef struct
     void *   ptr;
 } cps_packet_template_t;
 
-cps_result_t cps_subscribe(topic_t topic, pipe_t *pipe);
+cps_result_t cps_subscribe(topic_t topic, uint32_t topic_size, pipe_t *pipe);
 cps_result_t cps_publish(void *msg);
 cps_result_t cps_receive(pipe_t *pipe, void *msg, pipe_wait_t wait);
 topic_t      cps_get_mid(void *data);
