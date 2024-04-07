@@ -1,37 +1,35 @@
-import json
 import click
-import numpy as np
-
-def make_struct(struct):
-    struct_str = "typedef struct\n{\n\tuint32_t mid;\n"
-    for field in struct["fields"]:
-        struct_str += f'\t{field["type"]} {field["name"]};\n'
-    struct_name = f"cps_{struct['name'].replace(' ', '_')}_packet_t".lower()
-    struct_str += "}" + " " + struct_name + ";"
-    return struct_name, struct_str
+import importlib
 
 @click.command()
-@click.option("--input", help="Path to input json", required=True)
-def run(input):
-    with open("messages.h", "w+") as output:
-        output.write("#ifndef _MESSAGES_H_\n#define _MESSAGES_H_\n\n#include <stdint.h>\n\n")
-        with open(input, "r") as f:
-            structs = json.load(f)
-        struct_names = []
-        for index, message in enumerate(structs["user_messages"]):
-            msg_id = "0x" + hex(index)[2:].upper().zfill(8)
-            msg_name = f"cps_{message['name'].replace(' ', '_')}_mid".upper()
-            output.write(f"#define {msg_name} ({msg_id})\n\n")
-            struct_name, struct_str = make_struct(message)
-            struct_names.append(struct_name)
-            output.write(struct_str + "\n\n")
-        output.write("static const uint32_t cps_msg_size[] = {")
-        output.write(", ".join([f"sizeof({name})" for name in struct_names]))
-        output.write("};\n\n")
-        output.write("#endif\n")
+@click.option("--input", help="Path to input python message classes", required=True)
+@click.option("--output", help="Path to C header output file", required=True)
+def run(input, output):
+    # Import the messages defined in python classes
+    module = importlib.import_module(input)
+    globals().update({k: getattr(module, k) for k in dir(module) if not k.startswith('_')})
 
+    # Make the output file
+    f = open(output, "w+")
 
+    # Header file requirements
+    f.write("#ifndef __MESSAGES_H__\n")
+    f.write("#define __MESSAGES_H__\n")
+    f.write("\n")
+    f.write("#include <stdint.h>\n")
+    f.write("\n")
 
+    # Go through the messages and export
+    for key in MSGS.keys():
+        msg = MSGS[key]
+        struct_name = f"{msg.__name__}_MID"
+        f.write(msg.generate_c_struct_code() + "\n")
+        f.write(f"#define {struct_name} ({hex(key)})\n")
+        f.write(f"#define {struct_name}_LEN (sizeof({struct_name}))\n")
+        f.write("\n")
+
+    f.write("#endif\n")
+    f.close()
 
 if __name__ == "__main__":
     run()
