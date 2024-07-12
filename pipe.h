@@ -10,10 +10,17 @@ typedef enum
     PIPE_WAIT_POLL
 } pipe_wait_t;
 
+typedef enum
+{
+    PIPE_TYPE_NORMAL,
+    PIPE_TYPE_NETWORK
+} pipe_type_t;
+
 typedef struct
 {
-    void *   queue;
-    uint32_t obj_size;
+    void       *queue;
+    uint32_t    obj_size;
+    pipe_type_t type;
 } pipe_t;
 
 void pipe_init(pipe_t *pipe, uint32_t obj_size, uint32_t queue_len);

@@ -37,7 +37,33 @@ cps_result_t cps_subscribe(topic_t topic, uint32_t topic_size, pipe_t *pipe)
     return CPS_OK;
 }
 
-cps_result_t cps_publish(void *msg)
+cps_result_t cps_publish(void *msg) { return cps_publish_ex(msg, CPS_SRC_NORMAL); }
+
+cps_result_t cps_publish_ex(void *msg, cps_pub_src_t src)
+{
+    // Get the topic from the message type
+    topic_t topic = ((cps_packet_template_t *)msg)->mid;
+
+    // First node in the list is not used
+    cps_node_t *node = &cps_node;
+
+    // Get to the end of the list
+    while (node->next)
+    {
+        // Advance
+        node = node->next;
+
+        // Publish if there's a match
+        if ((node->topic == topic) || (node->topic == CPS_NETWORK_MID && src != CPS_SRC_NETWORK))
+        {
+            pipe_push(node->pipe, msg);
+        }
+    }
+
+    return CPS_OK;
+}
+
+cps_result_t cps_publish_network(void *msg)
 {
     // Get the topic from the message type
     topic_t topic = ((cps_packet_template_t *)msg)->mid;
