@@ -1,6 +1,7 @@
 #include "cpubsub_network.h"
 
 #include "cpubsub.h"
+#include "messages.h"
 
 #include "base64.h"
 
@@ -60,10 +61,10 @@ void cps_network_task(void)
     while (1)
     {
         // Get a message
-        cps_receive(&pipe, (void *)msg, PIPE_WAIT_POLL);
+        cps_receive(&pipe, (void *)msg, PIPE_WAIT_BLOCK);
 
         // Get this message type length
-        uint32_t msg_len = 10; // TODO:
+        uint32_t msg_len = messages_msg_len(cps_get_mid((void *)msg));
 
         // Encode the data
         uint32_t encoded_len = encode_data(msg, msg_len, encoded_data, CMD_MSG_BUFFER_LEN);

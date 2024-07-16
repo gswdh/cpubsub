@@ -54,7 +54,7 @@ cps_result_t cps_publish_ex(void *msg, cps_pub_src_t src)
         node = node->next;
 
         // Publish if there's a match
-        if ((node->topic == topic) || (node->topic == CPS_NETWORK_MID && src != CPS_SRC_NETWORK))
+        if ((node->topic == topic) || ((node->topic == CPS_NETWORK_MID) && (src == CPS_SRC_NORMAL)))
         {
             pipe_push(node->pipe, msg);
         }
