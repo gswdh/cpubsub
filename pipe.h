@@ -28,5 +28,6 @@ void     pipe_delete(pipe_t *pipe);
 void     pipe_push(pipe_t *pipe, void *p_item);
 bool     pipe_pop(pipe_t *pipe, void *p_item);
 uint32_t pipe_n_msgs(pipe_t *pipe);
+uint32_t pipe_item_size(pipe_t *pipe);
 
 #endif
