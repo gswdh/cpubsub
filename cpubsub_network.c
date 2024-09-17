@@ -5,8 +5,6 @@
 
 #include "base64.h"
 
-#include <assert.h>
-
 static uint32_t encode_data(const uint8_t *data,
                             const uint32_t len,
                             char          *encoded_data,
@@ -49,11 +47,11 @@ static uint32_t decode_data(const char    *encoded_data,
     return decoded_data_len;
 }
 
-void cps_network_task(void)
+void cps_network_task(void *params)
 {
-    pipe_t   pipe                             = {0};
-    uint8_t *msg[CMD_MSG_BUFFER_LEN]          = {0};
-    char    *encoded_data[CMD_MSG_BUFFER_LEN] = {0};
+    pipe_t  pipe                             = {0};
+    uint8_t msg[CMD_MSG_BUFFER_LEN]          = {0};
+    char    encoded_data[CMD_MSG_BUFFER_LEN] = {0};
 
     // The CPS_NETWORK_MID acts as a wild card for all messages
     cps_subscribe(CPS_NETWORK_MID, CMD_MSG_BUFFER_LEN, &pipe);
@@ -66,11 +64,16 @@ void cps_network_task(void)
         // Get this message type length
         uint32_t msg_len = messages_msg_len(cps_get_mid((void *)msg));
 
-        // Encode the data
-        uint32_t encoded_len = encode_data(msg, msg_len, encoded_data, CMD_MSG_BUFFER_LEN);
+        // Only if the message is valid
+        if (msg_len != 0)
+        {
+            // Encode the data
+            uint32_t encoded_len =
+                encode_data((const uint8_t *)msg, msg_len, encoded_data, CMD_MSG_BUFFER_LEN);
 
-        // Send on the network
-        cps_network_transmit(encoded_data, encoded_len);
+            // Send on the network
+            cps_network_transmit((uint8_t *)encoded_data, encoded_len);
+        }
     }
 }
 
@@ -85,9 +88,9 @@ void cps_network_recieve(char *data, uint32_t len)
     // Only send if the MID is non NULL
     uint32_t mid = cps_get_mid((void *)msg);
 
-    if (mid)
+    if (mid != 0)
     {
         // Send the data in the decoded message
-        cps_publish_ex((void *)msg, CPS_SRC_NETWORK);
+        cps_publish_ex((void *)msg, mid, CPS_SRC_NETWORK);
     }
 }

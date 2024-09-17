@@ -16,6 +16,6 @@ void cps_network_transmit(uint8_t *data, uint32_t len);
 */
 void cps_network_recieve(char *data, uint32_t len);
 
-void cps_network_task(void);
+void cps_network_task(void *params);
 
 #endif
