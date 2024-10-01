@@ -9,8 +9,14 @@ static cps_node_t cps_node = {0};
 
 cps_result_t cps_subscribe(topic_t topic, uint32_t topic_size, pipe_t *pipe)
 {
+    // Catch zero length pipe allocations
+    if (pipe->length == 0)
+    {
+        pipe->length = CPS_PIPE_LENGTH_DEFAULT;
+    }
+
     // Init the pipe
-    pipe_init(pipe, topic_size, 10);
+    pipe_init(pipe, topic_size, pipe->length);
 
     // First node in the list is not used
     cps_node_t *node = &cps_node;

@@ -6,7 +6,8 @@
 #include "pipe.h"
 #include "topic.h"
 
-#define CPS_NETWORK_MID (0)
+#define CPS_NETWORK_MID         (0)
+#define CPS_PIPE_LENGTH_DEFAULT (10)
 
 typedef enum
 {
