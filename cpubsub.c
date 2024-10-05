@@ -22,7 +22,7 @@ cps_result_t cps_subscribe(topic_t topic, uint32_t topic_size, pipe_t *pipe)
     cps_node_t *node = &cps_node;
 
     // Get to the end of the list
-    while (node->next)
+    while (node->next != NULL)
     {
         node = node->next;
     }
@@ -36,7 +36,7 @@ cps_result_t cps_subscribe(topic_t topic, uint32_t topic_size, pipe_t *pipe)
     node = node->next;
 
     // Make the new node
-    node->next  = 0;
+    node->next  = NULL;
     node->pipe  = pipe;
     node->topic = topic;
 
@@ -84,7 +84,7 @@ cps_result_t cps_publish_network(void *msg)
     cps_node_t *node = &cps_node;
 
     // Get to the end of the list
-    while (node->next)
+    while (node->next != NULL)
     {
         // Advance
         node = node->next;
@@ -104,17 +104,17 @@ cps_result_t cps_receive(pipe_t *pipe, void *msg, pipe_wait_t wait)
     if (wait == PIPE_WAIT_BLOCK)
     {
         // Wait for a message
-        while (!pipe_pop(pipe, msg))
+        while (pipe_pop(pipe, msg) == false)
         {
         }
 
         return CPS_OK;
     }
 
-    if (wait == PIPE_WAIT_POLL)
+    else if (wait == PIPE_WAIT_POLL)
     {
         // Try for a message
-        if (pipe_pop(pipe, msg))
+        if (pipe_pop(pipe, msg) == true)
         {
             return CPS_OK;
         }

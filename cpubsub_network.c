@@ -5,11 +5,16 @@
 
 #include "base64.h"
 
+#include <string.h>
+
 static uint32_t encode_data(const uint8_t *data,
                             const uint32_t len,
                             char          *encoded_data,
                             const uint32_t encoded_data_max_len)
 {
+    // Clean the dest data
+    memset(encoded_data, 0, encoded_data_max_len);
+
     // Calc the encoded data length
     uint32_t encoded_data_len = BASE64_ENCODE_OUT_SIZE(len);
 
