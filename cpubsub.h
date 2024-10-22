@@ -8,6 +8,7 @@
 
 #define CPS_NETWORK_MID         (0)
 #define CPS_PIPE_LENGTH_DEFAULT (10)
+#define CPS_RX_BLOCK_INT_MS     (10)
 
 typedef enum
 {
@@ -40,5 +41,6 @@ cps_result_t cps_publish(void *msg, uint32_t mid);
 cps_result_t cps_publish_ex(void *msg, uint32_t mid, cps_pub_src_t src);
 cps_result_t cps_receive(pipe_t *pipe, void *msg, pipe_wait_t wait);
 topic_t      cps_get_mid(void *data);
+void         cps_delay_ms(const uint32_t time_ms);
 
 #endif

@@ -106,6 +106,7 @@ cps_result_t cps_receive(pipe_t *pipe, void *msg, pipe_wait_t wait)
         // Wait for a message
         while (pipe_pop(pipe, msg) == false)
         {
+            cps_delay_ms(CPS_RX_BLOCK_INT_MS);
         }
 
         return CPS_OK;
@@ -124,3 +125,5 @@ cps_result_t cps_receive(pipe_t *pipe, void *msg, pipe_wait_t wait)
 }
 
 topic_t cps_get_mid(void *data) { return ((cps_packet_template_t *)data)->mid; }
+
+void __attribute__((weak)) cps_delay_ms(const uint32_t time_ms) { return; };
