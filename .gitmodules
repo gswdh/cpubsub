@@ -1,4 +1,0 @@
-[submodule "base64"]
-	path = base64
-	url = https://github.com/zhicheng/base64.git
-

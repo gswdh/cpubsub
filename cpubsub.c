@@ -124,6 +124,6 @@ cps_result_t cps_receive(pipe_t *pipe, void *msg, pipe_wait_t wait)
     return CPS_NO_MSG;
 }
 
-topic_t cps_get_mid(void *data) { return ((cps_packet_template_t *)data)->mid; }
+topic_t cps_get_mid(void *data) { return messages_msg_mid((const uint8_t *)data); }
 
 void __attribute__((weak)) cps_delay_ms(const uint32_t time_ms) { return; };

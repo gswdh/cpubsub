@@ -3,60 +3,100 @@
 #include "cpubsub.h"
 #include "messages.h"
 
-#include "base64.h"
-
+#include <stdio.h>
 #include <string.h>
 
-static uint32_t encode_data(const uint8_t *data,
-                            const uint32_t len,
-                            char          *encoded_data,
-                            const uint32_t encoded_data_max_len)
+static char *encode_data(const uint8_t *data)
 {
-    // Clean the dest data
-    memset(encoded_data, 0, encoded_data_max_len);
-
-    // Calc the encoded data length
-    uint32_t encoded_data_len = BASE64_ENCODE_OUT_SIZE(len);
-
-    // Check if we fit
-    if (encoded_data_len > encoded_data_max_len)
+    // Encoded data
+    switch (messages_msg_mid(data))
     {
-        return 0;
+    case MSGBackLightPercentage_MID:
+        return messages_serialise_msgbacklightpercentage(
+            (const MSGBackLightPercentage_t *const)data);
+        break;
+    case MSGMotorSpeed_MID:
+        return messages_serialise_msgmotorspeed((const MSGMotorSpeed_t *const)data);
+        break;
+    case MSGSensorGain_MID:
+        return messages_serialise_msgsensorgain((const MSGSensorGain_t *const)data);
+        break;
+    case MSGSensorExposure_MID:
+        return messages_serialise_msgsensorexposure((const MSGSensorExposure_t *const)data);
+        break;
+    case MSGScannerStatus_MID:
+        return messages_serialise_msgscannerstatus((const MSGScannerStatus_t *const)data);
+        break;
+    case MSGFPGADone_MID:
+        return messages_serialise_msgfpgadone((const MSGFPGADone_t *const)data);
+        break;
+    default:
+        return NULL;
+        break;
     }
 
-    // Encode and add a terminator
-    base64_encode(data, len, encoded_data);
-
-    // Return the length for TX
-    return encoded_data_len;
+    return NULL;
 }
 
-static uint32_t decode_data(const char    *encoded_data,
-                            const uint32_t encoded_len,
-                            uint8_t       *output_data,
-                            const uint32_t output_data_max_len)
+static uint32_t decode_data(const uint8_t *serialised, uint8_t *deserialised)
 {
-    // Calc the encoded data length
-    uint32_t decoded_data_len = BASE64_DECODE_OUT_SIZE(encoded_len);
-
-    // Check if we fit
-    if (decoded_data_len > output_data_max_len)
+    // Encoded data
+    const uint32_t mid = messages_msg_serialised_mid(serialised);
+    switch (mid)
     {
+    case MSGBackLightPercentage_MID:
+        if (messages_deserialise_msgbacklightpercentage(
+                serialised, (MSGBackLightPercentage_t *)deserialised) == false)
+        {
+            return 0;
+        }
+        break;
+    case MSGMotorSpeed_MID:
+        if (messages_deserialise_msgmotorspeed(serialised, (MSGMotorSpeed_t *)deserialised) ==
+            false)
+        {
+            return 0;
+        }
+        break;
+    case MSGSensorGain_MID:
+        if (messages_deserialise_msgsensorgain(serialised, (MSGSensorGain_t *)deserialised) ==
+            false)
+        {
+            return 0;
+        }
+        break;
+    case MSGSensorExposure_MID:
+        if (messages_deserialise_msgsensorexposure(serialised,
+                                                   (MSGSensorExposure_t *)deserialised) == false)
+        {
+            return 0;
+        }
+        break;
+    case MSGScannerStatus_MID:
+        if (messages_deserialise_msgscannerstatus(serialised, (MSGScannerStatus_t *)deserialised) ==
+            false)
+        {
+            return 0;
+        }
+        break;
+    case MSGFPGADone_MID:
+        if (messages_deserialise_msgfpgadone(serialised, (MSGFPGADone_t *)deserialised) == false)
+        {
+            return 0;
+        }
+        break;
+    default:
         return 0;
+        break;
     }
 
-    // Encode and add a terminator
-    base64_decode(encoded_data, encoded_len, output_data);
-
-    // Return the length for TX
-    return decoded_data_len;
+    return mid;
 }
 
 void cps_network_task(void *params)
 {
-    pipe_t  pipe                             = {0};
-    uint8_t msg[CMD_MSG_BUFFER_LEN]          = {0};
-    char    encoded_data[CMD_MSG_BUFFER_LEN] = {0};
+    pipe_t  pipe                    = {0};
+    uint8_t msg[CMD_MSG_BUFFER_LEN] = {0};
 
     // The CPS_NETWORK_MID acts as a wild card for all messages
     cps_subscribe(CPS_NETWORK_MID, CMD_MSG_BUFFER_LEN, &pipe);
@@ -66,18 +106,15 @@ void cps_network_task(void *params)
         // Get a message
         cps_receive(&pipe, (void *)msg, PIPE_WAIT_BLOCK);
 
-        // Get this message type length
-        uint32_t msg_len = messages_msg_len(cps_get_mid((void *)msg));
-
         // Only if the message is valid
-        if (msg_len != 0)
+        if (messages_msg_len(cps_get_mid((void *)msg)) != 0)
         {
             // Encode the data
-            uint32_t encoded_len =
-                encode_data((const uint8_t *)msg, msg_len, encoded_data, CMD_MSG_BUFFER_LEN);
+            char *data = encode_data((const uint8_t *)msg);
 
             // Send on the network
-            cps_network_transmit((uint8_t *)encoded_data, encoded_len);
+            cps_network_transmit((uint8_t *)data, strlen(data));
+            free(data);
         }
     }
 }
@@ -87,12 +124,8 @@ void __attribute__((weak)) cps_network_transmit(uint8_t *data, uint32_t len) {}
 void cps_network_recieve(char *data, uint32_t len)
 {
     // Decode the base64
-    uint8_t msg[CMD_MSG_BUFFER_LEN] = {0};
-    decode_data(data, len, msg, CMD_MSG_BUFFER_LEN);
-
-    // Only send if the MID is non NULL
-    uint32_t mid = cps_get_mid((void *)msg);
-
+    uint8_t        msg[CMD_MSG_BUFFER_LEN] = {0};
+    const uint32_t mid                     = decode_data((const uint8_t *)data, msg);
     if (mid != 0)
     {
         // Send the data in the decoded message
