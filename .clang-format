@@ -1,4 +1,3 @@
-# Reasonable RFX Clang Format config v0
 # https://clang.llvm.org/docs/ClangFormatStyleOptions.html
 ---
 Language:      Cpp
@@ -7,7 +6,6 @@ ColumnLimit: 100
 IndentWidth: 4
 UseTab: Never
 
-# ALL CHANGES BELOW ARE RFX-AGREED.
 # We prefer to always have a newline break before "{" that follows functions and control statements.
 BreakBeforeBraces: Allman
 
