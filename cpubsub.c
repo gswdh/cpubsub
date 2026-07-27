@@ -1,110 +1,148 @@
 #include "cpubsub.h"
 
+#include "cpubsub_config.h"
+
+#include "sublist.h"
+
 #include <stddef.h>
 #include <stdlib.h>
+#ifdef CPS_HEADER_USE_TIME_H
+#include <time.h>
+#endif
 
-#include "messages.h"
-
-static cps_node_t cps_node = {0};
-
-cps_result_t cps_subscribe(topic_t topic, uint32_t topic_size, pipe_t *pipe)
+/**
+ * @brief Retrieves the message ID from a given message following the standard message format.
+ *
+ * This function extracts the message ID from the header of the provided message.
+ *
+ * @param msg Pointer to the message structure.
+ * @return The message ID (msg_id) of the provided message.
+ */
+static uint32_t cps_get_mid(const void *msg)
 {
+    // Check the message is not null
+    if (msg == NULL)
+    {
+        return 0U;
+    }
+
+    return ((cps_packet_template_t *)msg)->header.msg_id;
+}
+
+cps_result_t cps_subscribe(pipe_t *pipe, const uint32_t msg_id, const uint32_t msg_size)
+{
+    // Check the pipe is not null
+    if (pipe == NULL)
+    {
+        return CPS_INVALID_PARAM;
+    }
+
     // Catch zero length pipe allocations
-    if (pipe->length == 0)
+    if (pipe->length == 0U)
     {
         pipe->length = CPS_PIPE_LENGTH_DEFAULT;
     }
 
     // Init the pipe
-    pipe_init(pipe, topic_size, pipe->length);
-
-    // First node in the list is not used
-    cps_node_t *node = &cps_node;
-
-    // Get to the end of the list
-    while (node->next != NULL)
+    if (pipe_init(pipe, msg_size, pipe->length) != PIPE_OK)
     {
-        node = node->next;
+        return CPS_PIPE_INIT_ERROR;
     }
 
-    // Make a new node on the end
-    node->next = malloc(sizeof(cps_node_t));
-    if (node->next == NULL)
+    // Add the subscription
+    if (sublist_add_sub((const pipe_t *)pipe, (const uint32_t)msg_id) != SUBLIST_OK)
     {
-        return CPS_ALLOC_ERROR;
+        return CPS_SUB_ERROR;
     }
-    node = node->next;
-
-    // Make the new node
-    node->next  = NULL;
-    node->pipe  = pipe;
-    node->topic = topic;
 
     return CPS_OK;
 }
 
-cps_result_t cps_publish(void *msg, uint32_t mid)
+void cps_init_msg_header(void *msg, const uint32_t device_id, const uint32_t msg_id)
 {
-    return cps_publish_ex(msg, mid, CPS_SRC_NORMAL);
+    // Check the message is not null
+    if (msg == NULL)
+    {
+        return;
+    }
+
+    cps_packet_header_t *header = &((cps_packet_template_t *)msg)->header;
+
+    header->msg_id    = msg_id;
+    header->sender_id = device_id;
+
+#ifdef CPS_HEADER_USE_TIMESTAMP
+#ifdef CPS_HEADER_USE_TIME_H
+    clock_t now                = clock();
+    header->time.seconds_s     = (uint32_t)now / (uint32_t)1e6;
+    header->time.subseconds_us = (uint32_t)now % (uint32_t)1e6;
+#else
+    header->time = cps_get_time();
+#endif
+#endif
 }
 
-cps_result_t cps_publish_ex(void *msg, uint32_t mid, cps_pub_src_t src)
+cps_result_t cps_publish(const void *msg)
 {
-    // Set the MID in the message
-    ((cps_packet_template_t *)msg)->mid = mid;
+    // Check the message is not null
+    if (msg == NULL)
+    {
+        return CPS_INVALID_PARAM;
+    }
 
-    // Get the topic from the message type
-    topic_t topic = ((cps_packet_template_t *)msg)->mid;
+    // Get the msg_id from the packet
+    const uint32_t msg_id = cps_get_mid(msg);
 
-    // First node in the list is not used
-    cps_node_t *node = &cps_node;
+    // Get all the pipes that are subbed to this msg_id
+    pipe_t        *pipes[CPS_MAX_SUBS] = {0};
+    const uint32_t n_subs              = sublist_get_subs(pipes, msg_id, CPS_MAX_SUBS);
 
     // Get to the end of the list
-    while (node->next)
+    for (uint32_t i = 0U; i < n_subs; i++)
     {
-        // Advance
-        node = node->next;
-
-        // Publish if there's a match
-        if ((node->topic == topic) || ((node->topic == CPS_NETWORK_MID) && (src == CPS_SRC_NORMAL)))
+        if (pipe_push(pipes[i], msg) != PIPE_OK)
         {
-            pipe_push(node->pipe, msg);
+            return CPS_PUB_ERROR;
         }
     }
 
     return CPS_OK;
 }
 
-cps_result_t cps_publish_network(void *msg)
+#ifdef CPS_HEADER_USE_NETWORKING
+cps_result_t cps_publish_from_network(const void *msg, const uint32_t device_id)
 {
-    // Get the topic from the message type
-    topic_t topic = ((cps_packet_template_t *)msg)->mid;
-
-    // First node in the list is not used
-    cps_node_t *node = &cps_node;
-
-    // Get to the end of the list
-    while (node->next != NULL)
+    // Check the message is not null
+    if (msg == NULL)
     {
-        // Advance
-        node = node->next;
-
-        // Publish if there's a match
-        if (node->topic == topic)
-        {
-            pipe_push(node->pipe, msg);
-        }
+        return CPS_INVALID_PARAM;
     }
 
-    return CPS_OK;
-}
+    const uint32_t sender_id = ((cps_packet_template_t *)msg)->header.sender_id;
 
-cps_result_t cps_receive(pipe_t *pipe, void *msg, pipe_wait_t wait)
-{
-    if (wait == PIPE_WAIT_BLOCK)
+    // If the device IDs match it means the message was orignally from us...
+    if (device_id == sender_id)
     {
-        // Wait for a message
-        while (pipe_pop(pipe, msg) == false)
+        // ...so do not publish it
+        return CPS_PUB_ERROR;
+    }
+
+    return cps_publish(msg);
+}
+#endif
+
+cps_result_t cps_receive(const pipe_t *pipe, void *msg, const cps_wait_t wait)
+{
+    // Check the pipe is not null
+    if (pipe == NULL || msg == NULL)
+    {
+        return CPS_INVALID_PARAM;
+    }
+
+    if (wait == CPS_WAIT_BLOCK)
+    {
+        // Wait here until we get a message
+        while (pipe_pop(pipe, msg, (const uint32_t)pipe->msg_size) != PIPE_OK)
         {
             cps_delay_ms(CPS_RX_BLOCK_INT_MS);
         }
@@ -112,18 +150,19 @@ cps_result_t cps_receive(pipe_t *pipe, void *msg, pipe_wait_t wait)
         return CPS_OK;
     }
 
-    else if (wait == PIPE_WAIT_POLL)
+    else if (wait == CPS_WAIT_POLL)
     {
-        // Try for a message
-        if (pipe_pop(pipe, msg) == true)
+        // Try once for a message
+        if (pipe_pop(pipe, msg, (const uint32_t)pipe->msg_size) == PIPE_OK)
         {
             return CPS_OK;
         }
     }
 
+    else
+    {
+        return CPS_INVALID_PARAM;
+    }
+
     return CPS_NO_MSG;
 }
-
-topic_t cps_get_mid(void *data) { return messages_msg_mid((const uint8_t *)data); }
-
-void __attribute__((weak)) cps_delay_ms(const uint32_t time_ms) { return; };

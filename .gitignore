@@ -54,3 +54,5 @@ dkms.conf
 # Others
 /.vscode/
 __pycache__/
+
+.DS_Store
